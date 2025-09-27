@@ -11,12 +11,23 @@ window.pages.overview = function() {
     <div id="price_chart" class="card"></div>
   `;
   fetchJson('/symbols').then(symbols => {
+    if (!symbols) {
+      app.innerHTML += `<div class="card"><b>Symbols:</b> <span style='color:#f00'>API error. Backend not reachable.</span></div>`;
+      document.getElementById('summary').innerHTML = `<b>Data Summary</b><br><span style='color:#f00'>No data available.</span>`;
+      document.getElementById('price_chart').innerHTML = `<h3>CL=F Prices (Past 1 Year)</h3><span style='color:#f00'>No chart data.</span>`;
+      return;
+    }
     app.innerHTML += `<div class="card"><b>Symbols:</b> ${symbols.join(', ')}</div>`;
     // Example: load CL=F data
     fetchJson('/data/load', {
       method: 'POST',
       body: JSON.stringify({symbol: 'CL=F', start: '2023-01-01', end: '2023-12-31', offline: window.offline})
     }).then(res => {
+      if (!res) {
+        document.getElementById('summary').innerHTML = `<b>Data Summary</b><br><span style='color:#f00'>No data available.</span>`;
+        document.getElementById('price_chart').innerHTML = `<h3>CL=F Prices (Past 1 Year)</h3><span style='color:#f00'>No chart data.</span>`;
+        return;
+      }
       document.getElementById('summary').innerHTML = `<b>Data Summary</b><br><pre>${JSON.stringify(res.summary, null, 2)}</pre>`;
       const dates = res.rows.map(r => r.date);
       const prices = res.rows.map(r => r.close);

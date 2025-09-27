@@ -16,8 +16,14 @@ function fetchJson(path, opts = {}) {
     ...opts,
     headers: { 'Content-Type': 'application/json' }
   })
-    .then(r => r.json())
-    .catch(e => { showToast('API error'); throw e; });
+    .then(r => {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    })
+    .catch(e => {
+      showToast('API error: Backend not reachable or returned error');
+      return null;
+    });
 }
 
 function renderPage(hash) {
